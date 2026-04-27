@@ -9,13 +9,16 @@ client.on(Events.ClientReady, (readyClient) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  console.log(interaction);
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isMessageContextMenuCommand()) {
+    return;
+  }
 
   if (interaction.commandName === "assess-take") {
     await assessTake(interaction);
     return;
   }
+
+  await interaction.reply({ content: "didn't work" });
 });
 
 client.login(process.env.DISCORD_TOKEN);

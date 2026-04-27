@@ -1,5 +1,4 @@
 import {
-  ApplicationCommandOptionType,
   ApplicationCommandType,
   REST,
   Routes,
@@ -10,17 +9,7 @@ import "dotenv/config";
 const commands: RESTPostAPIApplicationCommandsJSONBody[] = [
   {
     name: "assess-take",
-    description:
-      "Assess a users take and have them muted if the take is considered trash.",
-    type: ApplicationCommandType.ChatInput,
-    options: [
-      {
-        name: "target",
-        description: "User to assess",
-        type: ApplicationCommandOptionType.User,
-        required: true,
-      },
-    ],
+    type: ApplicationCommandType.Message,
   },
 ];
 

@@ -1,53 +1,48 @@
-import type { ChatInputCommandInteraction, TextBasedChannel } from "discord.js";
+import type {
+  Message,
+  MessageContextMenuCommandInteraction,
+  TextBasedChannel,
+} from "discord.js";
 
-async function getMessages(channel: TextBasedChannel | null, userId: string) {
+async function getMessages(channel: TextBasedChannel | null, message: Message) {
   if (!channel || !channel.isTextBased()) {
     throw new Error("Invalid channel");
   }
 
-  const fetched = await channel.messages.fetch({ limit: 50 });
-
-  const targetMessage = fetched.find((m) => m.author.id === userId);
-
-  if (!targetMessage) {
+  if (!message) {
     throw new Error("Couldn't find a recent message from that user.");
   }
 
   const previousMessages = await channel.messages.fetch({
     limit: 2,
-    before: targetMessage.id,
+    before: message.id,
   });
 
   const nextMessages = await channel.messages.fetch({
     limit: 2,
-    before: targetMessage.id,
+    before: message.id,
   });
 
   return [
     ...Array.from(previousMessages.values()),
-    targetMessage,
+    message,
     ...Array.from(nextMessages.values()),
   ]
     .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
     .map((m) => ({ author: m.author, message: m.content }));
 }
 
-export async function assessTake(interaction: ChatInputCommandInteraction) {
+export async function assessTake(
+  interaction: MessageContextMenuCommandInteraction,
+) {
   try {
-    const targetUser = interaction.options.getUser("target");
+    const message = interaction.targetMessage;
 
-    if (!targetUser) {
-      return interaction.reply({
-        content: "No user specified",
-        ephemeral: true,
-      });
-    }
-
-    const messages = getMessages(interaction.channel, targetUser.id);
+    const messages = await getMessages(interaction.channel, message);
 
     console.log(messages);
 
-    await interaction.reply(`Found context for <@${targetUser.id}>`);
+    await interaction.reply(`Found context for <@${message.author.id}>`);
   } catch (err: any) {
     return interaction.reply({
       content: err.message ?? "An error occured while processing your command",
